@@ -43,7 +43,7 @@ export default function Dashboard() {
           .limit(5);
 
         if (propertiesError) throw propertiesError;
-        setProperties(propertiesData);
+        setProperties(propertiesData as Property[]);
         setLoading(prev => ({ ...prev, properties: false }));
 
         // Fetch bookings
@@ -55,7 +55,14 @@ export default function Dashboard() {
           .limit(5);
 
         if (bookingsError) throw bookingsError;
-        setBookings(bookingsData);
+        
+        // Cast the status to the appropriate type
+        const typedBookings = bookingsData.map(booking => ({
+          ...booking,
+          status: booking.status as Booking['status']
+        }));
+        
+        setBookings(typedBookings);
         setLoading(prev => ({ ...prev, bookings: false }));
 
         // Fetch invitations
@@ -66,7 +73,14 @@ export default function Dashboard() {
           .limit(5);
 
         if (invitationsError) throw invitationsError;
-        setInvitations(invitationsData);
+        
+        // Cast the status to the appropriate type
+        const typedInvitations = invitationsData.map(invitation => ({
+          ...invitation,
+          status: invitation.status as Invitation['status']
+        }));
+        
+        setInvitations(typedInvitations);
         setLoading(prev => ({ ...prev, invitations: false }));
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
