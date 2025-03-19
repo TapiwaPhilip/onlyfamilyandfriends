@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Property, Booking, Invitation } from '@/types/supabase';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface DashboardData {
   properties: Property[];
@@ -36,7 +36,15 @@ export function useDashboardData(userId: string | undefined): DashboardData {
   });
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      // Reset loading states if there's no user ID
+      setLoading({
+        properties: false,
+        bookings: false,
+        invitations: false
+      });
+      return;
+    }
 
     const fetchData = async () => {
       try {
@@ -49,14 +57,12 @@ export function useDashboardData(userId: string | undefined): DashboardData {
 
         if (propertiesError) {
           setErrors(prev => ({ ...prev, properties: 'Failed to load your properties. Please try again later.' }));
-          toast({
-            variant: "destructive",
-            title: "Error loading properties",
+          toast.error("Error loading properties", {
             description: "We couldn't load your properties. Please try again later."
           });
           console.error('Properties fetch error:', propertiesError);
         } else {
-          setProperties(propertiesData as Property[]);
+          setProperties(propertiesData as Property[] || []);
           setErrors(prev => ({ ...prev, properties: null }));
         }
         setLoading(prev => ({ ...prev, properties: false }));
@@ -71,18 +77,16 @@ export function useDashboardData(userId: string | undefined): DashboardData {
 
         if (bookingsError) {
           setErrors(prev => ({ ...prev, bookings: 'Failed to load your bookings. Please try again later.' }));
-          toast({
-            variant: "destructive",
-            title: "Error loading bookings",
+          toast.error("Error loading bookings", {
             description: "We couldn't load your upcoming bookings. Please try again later."
           });
           console.error('Bookings fetch error:', bookingsError);
         } else {
           // Cast the status to the appropriate type
-          const typedBookings = bookingsData.map(booking => ({
+          const typedBookings = bookingsData ? bookingsData.map(booking => ({
             ...booking,
             status: booking.status as Booking['status']
-          }));
+          })) : [];
           
           setBookings(typedBookings);
           setErrors(prev => ({ ...prev, bookings: null }));
@@ -98,18 +102,16 @@ export function useDashboardData(userId: string | undefined): DashboardData {
 
         if (invitationsError) {
           setErrors(prev => ({ ...prev, invitations: 'Failed to load your invitations. Please try again later.' }));
-          toast({
-            variant: "destructive",
-            title: "Error loading invitations",
+          toast.error("Error loading invitations", {
             description: "We couldn't load your invitations. Please try again later."
           });
           console.error('Invitations fetch error:', invitationsError);
         } else {
           // Cast the status to the appropriate type
-          const typedInvitations = invitationsData.map(invitation => ({
+          const typedInvitations = invitationsData ? invitationsData.map(invitation => ({
             ...invitation,
             status: invitation.status as Invitation['status']
-          }));
+          })) : [];
           
           setInvitations(typedInvitations);
           setErrors(prev => ({ ...prev, invitations: null }));
@@ -117,10 +119,15 @@ export function useDashboardData(userId: string | undefined): DashboardData {
         setLoading(prev => ({ ...prev, invitations: false }));
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        toast({
-          variant: "destructive",
-          title: "Error loading dashboard",
+        toast.error("Error loading dashboard", {
           description: "Something went wrong. Please try refreshing the page."
+        });
+        
+        // Set all loading states to false on error
+        setLoading({
+          properties: false,
+          bookings: false,
+          invitations: false
         });
       }
     };

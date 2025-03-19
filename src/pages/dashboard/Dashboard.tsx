@@ -9,11 +9,19 @@ import { BookingList } from '@/components/dashboard/BookingList';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useEffect } from 'react';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const { properties, bookings, invitations, loading, errors } = useDashboardData(user?.id);
+
+  // Redirect to auth page if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, isLoading, navigate]);
 
   // Function to render error alerts
   const renderErrorAlert = (error: string | null, title: string) => {
@@ -27,6 +35,20 @@ export default function Dashboard() {
       </Alert>
     );
   };
+
+  // If still loading auth state, don't render anything yet
+  if (isLoading) {
+    return <DashboardLayout>
+      <div className="py-6">
+        <p className="text-center text-gray-500">Loading...</p>
+      </div>
+    </DashboardLayout>;
+  }
+
+  // If no user, Auth redirect will happen via useEffect
+  if (!user) {
+    return null;
+  }
 
   return (
     <DashboardLayout>
