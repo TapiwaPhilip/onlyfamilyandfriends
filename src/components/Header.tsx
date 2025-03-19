@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Menu, X, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -35,7 +36,7 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <span className="font-display font-bold text-xl">
-              OnlyFamily<span className="text-primary"> & </span>Friends
+              Only Family<span className="text-primary"> & </span>Friends
             </span>
           </Link>
 
@@ -66,7 +67,7 @@ export function Header() {
       <div className={cn("fixed inset-0 z-50 bg-white transform transition-transform duration-300 ease-in-out", mobileMenuOpen ? "translate-x-0" : "translate-x-full")}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <span className="font-display font-bold text-xl">
-            OnlyFamily<span className="text-primary">and</span>Friends
+            Only Family<span className="text-primary">and</span>Friends
           </span>
           <button className="rounded-full p-2 text-gray-500 hover:bg-gray-100 focus:outline-none" onClick={() => setMobileMenuOpen(false)}>
             <X className="h-6 w-6" />

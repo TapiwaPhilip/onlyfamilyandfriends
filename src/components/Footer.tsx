@@ -11,7 +11,7 @@ export function Footer() {
           <div className="space-y-4">
             <Link to="/" className="inline-block">
               <span className="font-display font-bold text-xl">
-                OnlyFamily<span className="text-primary">and</span>Friends
+                Only Family<span className="text-primary">and</span>Friends
               </span>
             </Link>
             <p className="text-muted-foreground text-sm max-w-xs">
@@ -57,7 +57,7 @@ export function Footer() {
         
         <div className="border-t border-gray-200 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            &copy; {currentYear} OnlyFamilyandFriends. All rights reserved.
+            &copy; {currentYear} Only FamilyandFriends. All rights reserved.
           </p>
           
           <div className="flex space-x-6 mt-4 md:mt-0">
