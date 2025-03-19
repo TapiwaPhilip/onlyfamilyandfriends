@@ -10,18 +10,26 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Dashboard() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { properties, bookings, invitations, loading, errors } = useDashboardData(user?.id);
+  const { properties, bookings, invitations, loading, errors, refetch } = useDashboardData(user?.id);
 
   // Redirect to auth page if not authenticated
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!authLoading && !user) {
       navigate('/auth');
     }
-  }, [user, isLoading, navigate]);
+  }, [user, authLoading, navigate]);
+
+  // Refetch data when user changes or signs in
+  useEffect(() => {
+    if (user) {
+      refetch();
+    }
+  }, [user, refetch]);
 
   // Function to render error alerts
   const renderErrorAlert = (error: string | null, title: string) => {
@@ -36,13 +44,28 @@ export default function Dashboard() {
     );
   };
 
-  // If still loading auth state, don't render anything yet
-  if (isLoading) {
-    return <DashboardLayout>
-      <div className="py-6">
-        <p className="text-center text-gray-500">Loading...</p>
-      </div>
-    </DashboardLayout>;
+  // If still loading auth state, show loading UI
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="py-6">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <Skeleton className="h-8 w-64 mb-2" />
+              <Skeleton className="h-4 w-96" />
+            </div>
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <Skeleton className="h-32 rounded-lg" />
+            <Skeleton className="h-32 rounded-lg" />
+            <Skeleton className="h-32 rounded-lg" />
+          </div>
+          <Skeleton className="h-64 rounded-lg mb-8" />
+          <Skeleton className="h-64 rounded-lg" />
+        </div>
+      </DashboardLayout>
+    );
   }
 
   // If no user, Auth redirect will happen via useEffect
@@ -57,7 +80,7 @@ export default function Dashboard() {
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Welcome back! Here's an overview of your properties and bookings.
+              Welcome back{user?.email ? `, ${user.email.split('@')[0]}` : ''}! Here's an overview of your properties and bookings.
             </p>
           </div>
           <div className="mt-4 md:mt-0">

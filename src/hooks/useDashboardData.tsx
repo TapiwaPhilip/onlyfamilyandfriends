@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Property, Booking, Invitation } from '@/types/supabase';
 import { toast } from 'sonner';
@@ -18,6 +18,7 @@ interface DashboardData {
     bookings: string | null;
     invitations: string | null;
   };
+  refetch: () => Promise<void>;
 }
 
 export function useDashboardData(userId: string | undefined): DashboardData {
@@ -35,7 +36,7 @@ export function useDashboardData(userId: string | undefined): DashboardData {
     invitations: null
   });
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!userId) {
       // Reset loading states if there's no user ID
       setLoading({
@@ -46,94 +47,109 @@ export function useDashboardData(userId: string | undefined): DashboardData {
       return;
     }
 
-    const fetchData = async () => {
-      try {
-        // Fetch properties
-        const { data: propertiesData, error: propertiesError } = await supabase
-          .from('properties')
-          .select('*')
-          .eq('owner_id', userId)
-          .limit(5);
+    // Reset errors before fetching
+    setErrors({
+      properties: null,
+      bookings: null,
+      invitations: null
+    });
 
-        if (propertiesError) {
-          setErrors(prev => ({ ...prev, properties: 'Failed to load your properties. Please try again later.' }));
-          toast.error("Error loading properties", {
-            description: "We couldn't load your properties. Please try again later."
-          });
-          console.error('Properties fetch error:', propertiesError);
-        } else {
-          setProperties(propertiesData as Property[] || []);
-          setErrors(prev => ({ ...prev, properties: null }));
-        }
-        setLoading(prev => ({ ...prev, properties: false }));
+    // Set loading states to true
+    setLoading({
+      properties: true,
+      bookings: true,
+      invitations: true
+    });
 
-        // Fetch bookings
-        const { data: bookingsData, error: bookingsError } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('guest_id', userId)
-          .order('start_date', { ascending: true })
-          .limit(5);
+    try {
+      // Fetch properties
+      const { data: propertiesData, error: propertiesError } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('owner_id', userId)
+        .limit(5);
 
-        if (bookingsError) {
-          setErrors(prev => ({ ...prev, bookings: 'Failed to load your bookings. Please try again later.' }));
-          toast.error("Error loading bookings", {
-            description: "We couldn't load your upcoming bookings. Please try again later."
-          });
-          console.error('Bookings fetch error:', bookingsError);
-        } else {
-          // Cast the status to the appropriate type
-          const typedBookings = bookingsData ? bookingsData.map(booking => ({
-            ...booking,
-            status: booking.status as Booking['status']
-          })) : [];
-          
-          setBookings(typedBookings);
-          setErrors(prev => ({ ...prev, bookings: null }));
-        }
-        setLoading(prev => ({ ...prev, bookings: false }));
-
-        // Fetch invitations
-        const { data: invitationsData, error: invitationsError } = await supabase
-          .from('invitations')
-          .select('*')
-          .eq('sender_id', userId)
-          .limit(5);
-
-        if (invitationsError) {
-          setErrors(prev => ({ ...prev, invitations: 'Failed to load your invitations. Please try again later.' }));
-          toast.error("Error loading invitations", {
-            description: "We couldn't load your invitations. Please try again later."
-          });
-          console.error('Invitations fetch error:', invitationsError);
-        } else {
-          // Cast the status to the appropriate type
-          const typedInvitations = invitationsData ? invitationsData.map(invitation => ({
-            ...invitation,
-            status: invitation.status as Invitation['status']
-          })) : [];
-          
-          setInvitations(typedInvitations);
-          setErrors(prev => ({ ...prev, invitations: null }));
-        }
-        setLoading(prev => ({ ...prev, invitations: false }));
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        toast.error("Error loading dashboard", {
-          description: "Something went wrong. Please try refreshing the page."
+      if (propertiesError) {
+        setErrors(prev => ({ ...prev, properties: 'Failed to load your properties. Please try again later.' }));
+        toast.error("Error loading properties", {
+          description: "We couldn't load your properties. Please try again later."
         });
-        
-        // Set all loading states to false on error
-        setLoading({
-          properties: false,
-          bookings: false,
-          invitations: false
-        });
+        console.error('Properties fetch error:', propertiesError);
+      } else {
+        setProperties(propertiesData as Property[] || []);
+        setErrors(prev => ({ ...prev, properties: null }));
       }
-    };
+      setLoading(prev => ({ ...prev, properties: false }));
 
-    fetchData();
+      // Fetch bookings
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('guest_id', userId)
+        .order('start_date', { ascending: true })
+        .limit(5);
+
+      if (bookingsError) {
+        setErrors(prev => ({ ...prev, bookings: 'Failed to load your bookings. Please try again later.' }));
+        toast.error("Error loading bookings", {
+          description: "We couldn't load your upcoming bookings. Please try again later."
+        });
+        console.error('Bookings fetch error:', bookingsError);
+      } else {
+        // Cast the status to the appropriate type
+        const typedBookings = bookingsData ? bookingsData.map(booking => ({
+          ...booking,
+          status: booking.status as Booking['status']
+        })) : [];
+        
+        setBookings(typedBookings);
+        setErrors(prev => ({ ...prev, bookings: null }));
+      }
+      setLoading(prev => ({ ...prev, bookings: false }));
+
+      // Fetch invitations
+      const { data: invitationsData, error: invitationsError } = await supabase
+        .from('invitations')
+        .select('*')
+        .eq('sender_id', userId)
+        .limit(5);
+
+      if (invitationsError) {
+        setErrors(prev => ({ ...prev, invitations: 'Failed to load your invitations. Please try again later.' }));
+        toast.error("Error loading invitations", {
+          description: "We couldn't load your invitations. Please try again later."
+        });
+        console.error('Invitations fetch error:', invitationsError);
+      } else {
+        // Cast the status to the appropriate type
+        const typedInvitations = invitationsData ? invitationsData.map(invitation => ({
+          ...invitation,
+          status: invitation.status as Invitation['status']
+        })) : [];
+        
+        setInvitations(typedInvitations);
+        setErrors(prev => ({ ...prev, invitations: null }));
+      }
+      setLoading(prev => ({ ...prev, invitations: false }));
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      toast.error("Error loading dashboard", {
+        description: "Something went wrong. Please try refreshing the page."
+      });
+      
+      // Set all loading states to false on error
+      setLoading({
+        properties: false,
+        bookings: false,
+        invitations: false
+      });
+    }
   }, [userId]);
 
-  return { properties, bookings, invitations, loading, errors };
+  // Initial data fetch
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { properties, bookings, invitations, loading, errors, refetch: fetchData };
 }
