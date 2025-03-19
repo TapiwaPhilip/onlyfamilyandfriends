@@ -1,9 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { Menu, X, Bell } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Menu, X, Bell, User } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+
 const NavLink = ({
   href,
   children
@@ -13,9 +15,12 @@ const NavLink = ({
 }) => <Link to={href} className="group inline-flex items-center px-1 py-2 text-sm font-medium animated-link">
     {children}
   </Link>;
+
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
 
   // Effect to track scrolling for transparent/solid header transition
   useEffect(() => {
@@ -29,6 +34,12 @@ export function Header() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   return <>
       {/* Desktop Header */}
       <header className={cn("fixed top-0 left-0 right-0 z-50 px-6 py-4 transition-all duration-300 ease-in-out", isScrolled ? "bg-white/80 border-b border-gray-200/50 blur-backdrop shadow-sm" : "bg-transparent")}>
@@ -49,11 +60,56 @@ export function Header() {
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="sm">Sign in</Button>
-            <Button size="sm">Sign up</Button>
+            {user ? (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  <Bell className="h-5 w-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/dashboard')}
+                  className="gap-2"
+                >
+                  Dashboard
+                </Button>
+                <div 
+                  className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center overflow-hidden cursor-pointer"
+                  onClick={() => navigate('/dashboard/profile')}
+                >
+                  {profile?.avatar_url ? (
+                    <img 
+                      src={profile.avatar_url} 
+                      alt={`${profile.first_name || ''} ${profile.last_name || ''}`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                >
+                  Sign in
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                >
+                  Sign up
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -83,10 +139,41 @@ export function Header() {
           <Link to="/contact" className="block px-4 py-3 text-lg font-medium hover:bg-gray-100 rounded-md" onClick={() => setMobileMenuOpen(false)}>
             Contact
           </Link>
-          <div className="pt-4 mt-4 border-t border-gray-200">
-            <Button className="w-full mb-2">Sign up</Button>
-            <Button variant="outline" className="w-full">Sign in</Button>
-          </div>
+          {user ? (
+            <>
+              <Link to="/dashboard" className="block px-4 py-3 text-lg font-medium hover:bg-gray-100 rounded-md" onClick={() => setMobileMenuOpen(false)}>
+                Dashboard
+              </Link>
+              <Link to="/dashboard/profile" className="block px-4 py-3 text-lg font-medium hover:bg-gray-100 rounded-md" onClick={() => setMobileMenuOpen(false)}>
+                Profile
+              </Link>
+              <div className="pt-4 mt-4 border-t border-gray-200">
+                <Button className="w-full" onClick={handleSignOut}>Sign out</Button>
+              </div>
+            </>
+          ) : (
+            <div className="pt-4 mt-4 border-t border-gray-200">
+              <Button 
+                className="w-full mb-2" 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate('/auth');
+                }}
+              >
+                Sign up
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate('/auth');
+                }}
+              >
+                Sign in
+              </Button>
+            </div>
+          )}
         </nav>
       </div>
     </>;

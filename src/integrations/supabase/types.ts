@@ -9,7 +9,193 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          created_at: string
+          end_date: string
+          guest_id: string
+          id: string
+          property_id: string
+          start_date: string
+          status: string | null
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          guest_id: string
+          id?: string
+          property_id: string
+          start_date: string
+          status?: string | null
+          total_price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          guest_id?: string
+          id?: string
+          property_id?: string
+          start_date?: string
+          status?: string | null
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          property_id: string | null
+          sender_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          property_id?: string | null
+          sender_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          property_id?: string | null
+          sender_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          related_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          related_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          related_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          max_guests: number | null
+          owner_id: string
+          price_per_night: number | null
+          state: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          max_guests?: number | null
+          owner_id: string
+          price_per_night?: number | null
+          state?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          max_guests?: number | null
+          owner_id?: string
+          price_per_night?: number | null
+          state?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
