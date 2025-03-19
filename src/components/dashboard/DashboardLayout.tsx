@@ -1,8 +1,6 @@
-
 import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Bell, 
   Home, 
   User, 
   Calendar, 
@@ -24,6 +22,8 @@ import {
 } from '@/components/ui/sheet';
 import { NavLink } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NotificationList } from './NotificationList';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -60,14 +60,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Redirect to login if not authenticated
+  const { notifications, loading: notificationsLoading, error: notificationsError, unreadCount, markAsRead, markAllAsRead } = useNotifications(user?.id);
+
   useEffect(() => {
     if (!isLoading && !user) {
       navigate('/auth');
     }
   }, [user, isLoading, navigate]);
 
-  // Handle sign out
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
@@ -77,7 +77,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return (
       <div className="flex min-h-screen flex-col">
         <div className="flex-1 flex">
-          {/* Sidebar skeleton */}
           <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
             <div className="flex flex-col flex-grow border-r border-gray-200 bg-white pt-5 pb-4 overflow-y-auto">
               <div className="flex items-center flex-shrink-0 px-4 mb-5">
@@ -91,7 +90,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </div>
           
-          {/* Main content skeleton */}
           <div className="flex flex-1 flex-col lg:pl-64">
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
               <Skeleton className="h-8 w-40" />
@@ -116,7 +114,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="flex-1 flex">
-        {/* Desktop sidebar */}
         <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
           <div className="flex flex-col flex-grow border-r border-gray-200 bg-white pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4 mb-5">
@@ -146,7 +143,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
 
-        {/* Mobile sidebar */}
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetContent side="left" className="p-0 w-64">
             <div className="flex flex-col h-full">
@@ -213,9 +209,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </SheetContent>
         </Sheet>
 
-        {/* Main content */}
         <div className="flex flex-1 flex-col lg:pl-64">
-          {/* Top navigation */}
           <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-2 sm:px-6 lg:px-8 flex items-center justify-between">
             <SheetTrigger asChild className="lg:hidden">
               <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
@@ -225,9 +219,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </SheetTrigger>
             
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="h-5 w-5" />
-              </Button>
+              <NotificationList 
+                notifications={notifications}
+                loading={notificationsLoading}
+                error={notificationsError}
+                unreadCount={unreadCount}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={markAllAsRead}
+              />
+              
               <div className="flex items-center">
                 <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center overflow-hidden">
                   {profile?.avatar_url ? (
@@ -252,7 +252,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </div>
 
-          {/* Page content */}
           <main className="flex-1 overflow-y-auto pb-8 px-4 sm:px-6 lg:px-8">
             {children}
           </main>
