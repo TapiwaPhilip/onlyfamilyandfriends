@@ -1,6 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
@@ -8,11 +8,25 @@ import { PropertyList } from '@/components/dashboard/PropertyList';
 import { BookingList } from '@/components/dashboard/BookingList';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { properties, bookings, invitations, loading } = useDashboardData(user?.id);
+  const { properties, bookings, invitations, loading, errors } = useDashboardData(user?.id);
+
+  // Function to render error alerts
+  const renderErrorAlert = (error: string | null, title: string) => {
+    if (!error) return null;
+    
+    return (
+      <Alert variant="destructive" className="mb-6">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>{title}</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  };
 
   return (
     <DashboardLayout>
@@ -31,6 +45,11 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
+
+        {/* Error displays */}
+        {renderErrorAlert(errors.properties, "Properties Error")}
+        {renderErrorAlert(errors.bookings, "Bookings Error")}
+        {renderErrorAlert(errors.invitations, "Invitations Error")}
 
         {/* Overview cards */}
         <DashboardStats 

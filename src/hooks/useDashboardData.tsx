@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Property, Booking, Invitation } from '@/types/supabase';
+import { toast } from '@/hooks/use-toast';
 
 interface DashboardData {
   properties: Property[];
@@ -11,6 +12,11 @@ interface DashboardData {
     properties: boolean;
     bookings: boolean;
     invitations: boolean;
+  };
+  errors: {
+    properties: string | null;
+    bookings: string | null;
+    invitations: string | null;
   };
 }
 
@@ -22,6 +28,11 @@ export function useDashboardData(userId: string | undefined): DashboardData {
     properties: true,
     bookings: true,
     invitations: true
+  });
+  const [errors, setErrors] = useState({
+    properties: null,
+    bookings: null,
+    invitations: null
   });
 
   useEffect(() => {
@@ -36,8 +47,18 @@ export function useDashboardData(userId: string | undefined): DashboardData {
           .eq('owner_id', userId)
           .limit(5);
 
-        if (propertiesError) throw propertiesError;
-        setProperties(propertiesData as Property[]);
+        if (propertiesError) {
+          setErrors(prev => ({ ...prev, properties: 'Failed to load your properties. Please try again later.' }));
+          toast({
+            variant: "destructive",
+            title: "Error loading properties",
+            description: "We couldn't load your properties. Please try again later."
+          });
+          console.error('Properties fetch error:', propertiesError);
+        } else {
+          setProperties(propertiesData as Property[]);
+          setErrors(prev => ({ ...prev, properties: null }));
+        }
         setLoading(prev => ({ ...prev, properties: false }));
 
         // Fetch bookings
@@ -48,15 +69,24 @@ export function useDashboardData(userId: string | undefined): DashboardData {
           .order('start_date', { ascending: true })
           .limit(5);
 
-        if (bookingsError) throw bookingsError;
-        
-        // Cast the status to the appropriate type
-        const typedBookings = bookingsData.map(booking => ({
-          ...booking,
-          status: booking.status as Booking['status']
-        }));
-        
-        setBookings(typedBookings);
+        if (bookingsError) {
+          setErrors(prev => ({ ...prev, bookings: 'Failed to load your bookings. Please try again later.' }));
+          toast({
+            variant: "destructive",
+            title: "Error loading bookings",
+            description: "We couldn't load your upcoming bookings. Please try again later."
+          });
+          console.error('Bookings fetch error:', bookingsError);
+        } else {
+          // Cast the status to the appropriate type
+          const typedBookings = bookingsData.map(booking => ({
+            ...booking,
+            status: booking.status as Booking['status']
+          }));
+          
+          setBookings(typedBookings);
+          setErrors(prev => ({ ...prev, bookings: null }));
+        }
         setLoading(prev => ({ ...prev, bookings: false }));
 
         // Fetch invitations
@@ -66,23 +96,37 @@ export function useDashboardData(userId: string | undefined): DashboardData {
           .eq('sender_id', userId)
           .limit(5);
 
-        if (invitationsError) throw invitationsError;
-        
-        // Cast the status to the appropriate type
-        const typedInvitations = invitationsData.map(invitation => ({
-          ...invitation,
-          status: invitation.status as Invitation['status']
-        }));
-        
-        setInvitations(typedInvitations);
+        if (invitationsError) {
+          setErrors(prev => ({ ...prev, invitations: 'Failed to load your invitations. Please try again later.' }));
+          toast({
+            variant: "destructive",
+            title: "Error loading invitations",
+            description: "We couldn't load your invitations. Please try again later."
+          });
+          console.error('Invitations fetch error:', invitationsError);
+        } else {
+          // Cast the status to the appropriate type
+          const typedInvitations = invitationsData.map(invitation => ({
+            ...invitation,
+            status: invitation.status as Invitation['status']
+          }));
+          
+          setInvitations(typedInvitations);
+          setErrors(prev => ({ ...prev, invitations: null }));
+        }
         setLoading(prev => ({ ...prev, invitations: false }));
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        toast({
+          variant: "destructive",
+          title: "Error loading dashboard",
+          description: "Something went wrong. Please try refreshing the page."
+        });
       }
     };
 
     fetchData();
   }, [userId]);
 
-  return { properties, bookings, invitations, loading };
+  return { properties, bookings, invitations, loading, errors };
 }
