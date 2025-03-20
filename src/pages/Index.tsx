@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { ArrowRight, Calendar, Home, Mail, Users } from 'lucide-react';
 import { Header } from '@/components/Header';
@@ -49,7 +50,7 @@ const animateOnScroll = (elements: NodeListOf<Element>) => {
   });
 };
 
-export default function Index() {
+function Index() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -233,6 +234,6 @@ export default function Index() {
       <Footer />
     </div>
   );
-};
+}
 
 export default Index;
