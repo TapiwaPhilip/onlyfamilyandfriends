@@ -1,12 +1,12 @@
-
 import React, { useEffect, useRef } from 'react';
 import { ArrowRight, Calendar, Home, Mail, Users } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
-// Hero images - we will add mock images for the purposes of wireframing
 const heroImages = [
   '/placeholder.svg', 
   '/placeholder.svg', 
@@ -49,18 +49,25 @@ const animateOnScroll = (elements: NodeListOf<Element>) => {
   });
 };
 
-const Index = () => {
+export default function Index() {
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate('/dashboard');
+    }
+  }, [user, isLoading, navigate]);
+
   const featuresRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Set up animation observers
     if (featuresRef.current) {
       const features = featuresRef.current.querySelectorAll('.feature-item');
       animateOnScroll(features);
     }
 
-    // Animate the CTA section
     if (ctaRef.current) {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {

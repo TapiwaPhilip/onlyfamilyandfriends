@@ -37,8 +37,10 @@ export function useDashboardData(userId: string | undefined): DashboardData {
   });
 
   const fetchData = useCallback(async () => {
+    console.log('Fetching dashboard data for user ID:', userId);
     if (!userId) {
       // Reset loading states if there's no user ID
+      console.log('No user ID provided, resetting loading states');
       setLoading({
         properties: false,
         bookings: false,
@@ -63,6 +65,7 @@ export function useDashboardData(userId: string | undefined): DashboardData {
 
     try {
       // Fetch properties
+      console.log('Fetching properties for user ID:', userId);
       const { data: propertiesData, error: propertiesError } = await supabase
         .from('properties')
         .select('*')
@@ -70,18 +73,20 @@ export function useDashboardData(userId: string | undefined): DashboardData {
         .limit(5);
 
       if (propertiesError) {
+        console.error('Properties fetch error:', propertiesError);
         setErrors(prev => ({ ...prev, properties: 'Failed to load your properties. Please try again later.' }));
         toast.error("Error loading properties", {
           description: "We couldn't load your properties. Please try again later."
         });
-        console.error('Properties fetch error:', propertiesError);
       } else {
-        setProperties(propertiesData as Property[] || []);
+        console.log('Properties fetched successfully:', propertiesData);
+        setProperties(propertiesData || []);
         setErrors(prev => ({ ...prev, properties: null }));
       }
       setLoading(prev => ({ ...prev, properties: false }));
 
       // Fetch bookings
+      console.log('Fetching bookings for user ID:', userId);
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
         .select('*')
@@ -90,12 +95,13 @@ export function useDashboardData(userId: string | undefined): DashboardData {
         .limit(5);
 
       if (bookingsError) {
+        console.error('Bookings fetch error:', bookingsError);
         setErrors(prev => ({ ...prev, bookings: 'Failed to load your bookings. Please try again later.' }));
         toast.error("Error loading bookings", {
           description: "We couldn't load your upcoming bookings. Please try again later."
         });
-        console.error('Bookings fetch error:', bookingsError);
       } else {
+        console.log('Bookings fetched successfully:', bookingsData);
         // Cast the status to the appropriate type
         const typedBookings = bookingsData ? bookingsData.map(booking => ({
           ...booking,
@@ -108,6 +114,7 @@ export function useDashboardData(userId: string | undefined): DashboardData {
       setLoading(prev => ({ ...prev, bookings: false }));
 
       // Fetch invitations
+      console.log('Fetching invitations for user ID:', userId);
       const { data: invitationsData, error: invitationsError } = await supabase
         .from('invitations')
         .select('*')
@@ -115,12 +122,13 @@ export function useDashboardData(userId: string | undefined): DashboardData {
         .limit(5);
 
       if (invitationsError) {
+        console.error('Invitations fetch error:', invitationsError);
         setErrors(prev => ({ ...prev, invitations: 'Failed to load your invitations. Please try again later.' }));
         toast.error("Error loading invitations", {
           description: "We couldn't load your invitations. Please try again later."
         });
-        console.error('Invitations fetch error:', invitationsError);
       } else {
+        console.log('Invitations fetched successfully:', invitationsData);
         // Cast the status to the appropriate type
         const typedInvitations = invitationsData ? invitationsData.map(invitation => ({
           ...invitation,
@@ -148,8 +156,11 @@ export function useDashboardData(userId: string | undefined): DashboardData {
 
   // Initial data fetch
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (userId) {
+      console.log('Initial data fetch for user ID:', userId);
+      fetchData();
+    }
+  }, [fetchData, userId]);
 
   return { properties, bookings, invitations, loading, errors, refetch: fetchData };
 }

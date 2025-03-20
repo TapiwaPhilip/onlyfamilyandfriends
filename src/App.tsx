@@ -35,6 +35,10 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/profile" element={<Profile />} />
             <Route path="/dashboard/properties/new" element={<Dashboard />} /> {/* Placeholder - create this page later */}
+            <Route path="/dashboard/properties" element={<Dashboard />} />
+            <Route path="/dashboard/bookings" element={<Dashboard />} />
+            <Route path="/dashboard/invitations" element={<Dashboard />} />
+            <Route path="/dashboard/settings" element={<Dashboard />} />
             
             {/* Redirect fallback for dashboard paths */}
             <Route path="/dashboard/*" element={<Navigate to="/dashboard" replace />} />

@@ -11,15 +11,21 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { properties, bookings, invitations, loading, errors, refetch } = useDashboardData(user?.id);
 
+  // Debug logs
+  console.log('Auth state:', { user, authLoading });
+  console.log('Dashboard data:', { properties, bookings, invitations, loading, errors });
+
   // Redirect to auth page if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
+      console.log('User not authenticated, redirecting to auth page');
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
@@ -27,6 +33,7 @@ export default function Dashboard() {
   // Refetch data when user changes or signs in
   useEffect(() => {
     if (user) {
+      console.log('User authenticated, fetching dashboard data');
       refetch();
     }
   }, [user, refetch]);
@@ -46,6 +53,7 @@ export default function Dashboard() {
 
   // If still loading auth state, show loading UI
   if (authLoading) {
+    console.log('Auth is loading, showing skeleton UI');
     return (
       <DashboardLayout>
         <div className="py-6">
@@ -70,9 +78,17 @@ export default function Dashboard() {
 
   // If no user, Auth redirect will happen via useEffect
   if (!user) {
+    console.log('No user found, returning null');
     return null;
   }
 
+  // If data is loading but user is authenticated, show a simpler loading state
+  if (loading.properties || loading.bookings || loading.invitations) {
+    console.log('Dashboard data is loading, showing progress toast');
+    toast.info('Loading your dashboard data...');
+  }
+
+  console.log('Rendering full dashboard UI');
   return (
     <DashboardLayout>
       <div className="py-6">
