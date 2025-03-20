@@ -40,12 +40,17 @@ export function useDashboardData(userId: string | undefined): DashboardData {
     console.log('Fetching dashboard data for user ID:', userId);
     if (!userId) {
       // Reset loading states if there's no user ID
-      console.log('No user ID provided, resetting loading states');
+      console.log('No user ID provided or empty string, resetting loading states');
       setLoading({
         properties: false,
         bookings: false,
         invitations: false
       });
+      
+      // Clear any existing data
+      setProperties([]);
+      setBookings([]);
+      setInvitations([]);
       return;
     }
 
