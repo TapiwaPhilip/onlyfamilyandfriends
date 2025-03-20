@@ -16,12 +16,7 @@ import { toast } from 'sonner';
 export default function Dashboard() {
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  
-  console.log('Dashboard rendering. Auth state:', { user, authLoading });
-
-  // Use an empty string as fallback when user is not defined
-  const userId = user?.id || '';
-  const { properties, bookings, invitations, loading, errors, refetch } = useDashboardData(userId);
+  const { properties, bookings, invitations, loading, errors, refetch } = useDashboardData(user?.id);
 
   // Debug logs
   console.log('Auth state:', { user, authLoading });
